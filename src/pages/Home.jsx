@@ -1,22 +1,97 @@
 import googlelogo from "../assets/logogoogle.png";
 import { Perfil } from "../components/Perfil";
 import { UserAuth } from "../context/AuthContext";
+import styled from "styled-components";
+
+import {
+  Header,
+  Buscador,
+  Tabla,
+  Btnnuevo,
+  Registro,
+  CrudSupabaseContext,
+  supabase
+} from "../index";
+import { useState } from "react";
+import { useEffect } from "react";
 export function Home() {
-  const {user,signout} = UserAuth();
+  const { datacategoria, setDatacategoria,mostrarCategorias } = CrudSupabaseContext();
+  const [openRegistro, SetopenRegistro] = useState(false);
+  const [dataSelect, setdataSelect] = useState([]);
+  const [accion, setAccion] = useState("");
+  useEffect(() => {
+    supabase
+      .channel("postgresChangesChannel")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "categorias",
+        },
+        (payload) => {
+          mostrarCategorias();
+          payload.new.imagen != undefined
+            ? setDatacategoria((data) => [...data, payload.new])
+            : "";
+        }
+      )
+      .subscribe();
+  }, []);
 
-  return ( <div className="App">
-   <Perfil foto={user.picture} name={user.name} email={user.email}/>
-   
- 
+  function nuevoRegistro() {
+    SetopenRegistro(true);
+    setAccion("Nuevo");
+    setdataSelect([]);
+  }
+  return (
+    <Container>
+      <Header />
+      <span className="difuminado"></span>
+      {openRegistro && (
+        <Registro
+          dataSelect={dataSelect}
+          onClose={() => SetopenRegistro(!openRegistro)}
+          accion={accion}
+        />
+      )}
 
-  <h1>SUPABASE es COOL</h1>
-  <img src={googlelogo} className="logo google" alt="React logo" />
-  <div className="card">
-    <button onClick={signout}>Cerrar sesión</button>
-    <p>codigo369.com</p>
-  </div>
-  <p className="read-the-docs">
-    Supabase implementa todo el poder de PostgreSQL
-  </p>
-</div>);
+      <section className="contentBuscador">
+        <Buscador />
+        <Btnnuevo funcion={nuevoRegistro} />
+      </section>
+     
+      <Tabla
+        setdataSelect={setdataSelect}
+        rows={datacategoria}
+        SetopenRegistro={SetopenRegistro}
+        setAccion={setAccion}
+      />
+    </Container>
+  );
 }
+const Container = styled.div`
+  min-height: 100vh;
+  padding: 20px;
+  width: 100%;
+  background: ${({ theme }) => theme.bgtotal};
+  color: ${({ theme }) => theme.text};
+  position: relative;
+  .difuminado {
+    display: block;
+    background-color: #0b4f27;
+    height: 400px;
+    width: 100%;
+    border-radius: 50px;
+    position: absolute;
+    filter: blur(4rem);
+    top: 50px;
+  }
+  .contentBuscador {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10%;
+    position:relative;
+  }
+`;

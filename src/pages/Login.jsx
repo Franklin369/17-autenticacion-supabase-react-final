@@ -6,11 +6,10 @@ import googlelogo from "../assets/logogoogle.png";
 import { UserAuth } from "../context/AuthContext";
 
 export function Login() {
-  const {signInWithGoogle} = UserAuth();
-
+  const { signInWithGoogle } = UserAuth();
 
   return (
-    <div className="App">
+    <Container>
       <div>
         <img src={viteLogo} className="logo" alt="Vite logo" />
 
@@ -27,7 +26,24 @@ export function Login() {
       <p className="read-the-docs">
         Supabase implementa todo el poder de PostgreSQL
       </p>
-    </div>
+    </Container>
   );
 }
-const Container = styled.div``;
+const Container = styled.div`
+  background-color: #242424;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.87);
+  .card {
+    display:flex;
+    flex-direction:column;
+    gap: 20px;
+    button{
+      color:white;
+    }
+  }
+`;
